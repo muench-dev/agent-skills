@@ -12,7 +12,7 @@ Use this skill to work on the `mage-remote-run` extensibility model. It covers J
 1. Identify whether the task needs executable JavaScript, static configuration, or both.
 2. Read the matching reference file before editing:
    - `references/plugin-management.md` for registration and distribution behavior.
-   - `references/plugin-runtime.md` for plugin module shape, runtime context, events, connection guards, and MCP notes.
+   - `references/plugin-runtime.md` for plugin module shape, runtime context, events, connection guards, MCP notes, and built-in `lib` helpers.
    - `references/plugin-configuration.md` for `config` mutation, `saveConfig()`, and static config files.
    - `references/virtual-commands.md` for config-driven REST command definitions.
 3. Prefer the lowest-complexity extension that solves the request:
@@ -28,6 +28,9 @@ Use this skill to work on the `mage-remote-run` extensibility model. It covers J
 - Treat `context.config` as the live CLI configuration object for the current run.
 - Use `saveConfig()` only when settings should persist to `config.json`.
 - Use `createClient()` for Magento or Adobe Commerce API calls instead of reimplementing auth.
+- Prefer `context.lib.utils` for built-in table, filter, sort, pagination, and format helpers instead of duplicating CLI behavior.
+- Use `context.lib.commandHelper` when plugin logic needs abbreviation-aware command matching or expansion.
+- Use `context.lib.config.loadConfig()` and `context.lib.config.saveConfig()` when the plugin needs the shared config helpers directly.
 - Keep plugin commands compatible with normal CLI help, options, and output formats.
 - Prefer static `mage-remote-run.json` or package metadata for lightweight command bundles with no runtime logic.
 
@@ -61,6 +64,10 @@ Use this skill to work on the `mage-remote-run` extensibility model. It covers J
 - Extra parameters map to the query string for `GET` and `DELETE`, and to the JSON body for `POST`, `PUT`, and `PATCH`.
 - Predefined filters support `${optionName}` and `{:optionName}` placeholder substitution only.
 - Supported connection types are `magento-os`, `mage-os`, `ac-on-prem`, `ac-cloud-paas`, and `ac-saas`.
+- Built-in helpers are available under `context.lib`:
+  - `lib.utils`: `printTable`, `handleError`, `buildSearchCriteria`, `buildSortCriteria`, `addFilterOption`, `addSortOption`, `addPaginationOptions`, `addFormatOption`, `formatOutput`, `applyLocalSearchCriteria`
+  - `lib.commandHelper`: `expandCommandAbbreviations`, `resolveCommandMatch`
+  - `lib.config`: `loadConfig`, `saveConfig`
 
 ## Deliverables
 

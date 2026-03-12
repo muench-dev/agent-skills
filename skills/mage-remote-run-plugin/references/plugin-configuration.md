@@ -38,6 +38,8 @@ export default async function plugin(context) {
 }
 ```
 
+If a plugin needs the shared config helpers directly instead of only the injected `context.saveConfig`, it can also use `context.lib.config.loadConfig()` and `context.lib.config.saveConfig()`.
+
 ## Static Configuration Sources
 
 Instead of mutating config in JavaScript, a plugin can provide static JSON. The loader checks in this order:
@@ -67,3 +69,5 @@ Example `mage-remote-run.json`:
 - inject virtual commands for custom APIs
 - package reusable command definitions for a team
 - combine static config with runtime logic in one plugin
+
+When a plugin also adds executable commands around those config entries, pair this with `context.lib.utils` so command behavior matches built-in filter, pagination, sort, and output handling.

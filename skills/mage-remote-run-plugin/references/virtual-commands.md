@@ -6,6 +6,8 @@ Virtual commands define reusable REST requests through configuration instead of 
 
 They can live directly in CLI `config.json` or be shipped from a plugin.
 
+When a plugin needs logic around a virtual command instead of pure declarative config, use `context.lib.utils` in the plugin entrypoint so filter, sort, pagination, table rendering, and output formatting stay aligned with the built-in commands.
+
 ## Example
 
 ```json
@@ -136,3 +138,5 @@ Predefined filters support placeholders such as `${firstLetter}` or `{:firstLett
 Only simple placeholder substitution is supported; JavaScript expressions are not evaluated.
 
 Users can still add extra `--filter` flags at runtime.
+
+If the surrounding plugin needs to inspect or normalize command tokens before dispatch, use `context.lib.commandHelper` alongside these virtual command definitions.

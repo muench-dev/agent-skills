@@ -37,6 +37,97 @@ The documented context fields are:
 - `eventBus`: event emitter for plugin lifecycle hooks.
 - `events`: event name constants.
 - `createClient`: factory for the active Magento or Adobe Commerce API client.
+- `lib`: built-in helper modules exposed by `mage-remote-run`.
+
+## Built-in Library Utilities
+
+`context.lib` gives plugins access to the same internal helpers used by built-in CLI commands, without importing internal package paths directly.
+
+### `lib.utils`
+
+- `printTable(headers, rows)`: render a colored CLI table.
+- `handleError(error)`: format and print Magento API errors.
+- `buildSearchCriteria(options)`: convert `--filter` and pagination options into Magento search params.
+- `buildSortCriteria(options)`: convert `--sort` options into Magento sort params.
+- `addFilterOption(command)`: add the standard `--filter` option.
+- `addSortOption(command)`: add the standard sort-related options.
+- `addPaginationOptions(command)`: add `--page` and `--size` options.
+- `addFormatOption(command)`: add the standard `--format` option.
+- `formatOutput(options, data)`: print JSON or XML output and return whether output was handled.
+- `applyLocalSearchCriteria(data, options)`: filter, sort, and paginate a local array.
+
+Example:
+
+```javascript
+export default async function plugin(context) {
+  const { program, createClient, lib } = context;
+  const {
+    printTable,
+    handleError,
+    addFilterOption,
+    addPaginationOptions,
+    buildSearchCriteria,
+  } = lib.utils;
+
+  const cmd = program.command('my-items').description('List items from a custom endpoint');
+
+  addFilterOption(cmd);
+  addPaginationOptions(cmd);
+
+  cmd.action(async (options) => {
+    try {
+      const client = await createClient();
+      const { params } = buildSearchCriteria(options);
+      const result = await client.get('V1/my-items', { params });
+      const items = result.items ?? [];
+
+      if (items.length === 0) {
+        console.log('No items found.');
+        return;
+      }
+
+      printTable(['ID', 'Name', 'Status'], items.map((item) => [item.id, item.name, item.status]));
+    } catch (error) {
+      handleError(error);
+    }
+  });
+}
+```
+
+### `lib.commandHelper`
+
+- `expandCommandAbbreviations(rootCommand, argv)`: expand abbreviated or colon-separated command tokens.
+- `resolveCommandMatch(parent, token)`: resolve an exact or abbreviated command match and report ambiguity.
+
+Use these helpers when plugin behavior needs to inspect or manipulate Commander command trees in the same way as the core CLI.
+
+### `lib.config`
+
+- `loadConfig()`: load the persisted CLI config from disk.
+- `saveConfig(config)`: save a config object to disk.
+
+Example:
+
+```javascript
+export default async function plugin(context) {
+  const { program, lib } = context;
+  const { loadConfig, saveConfig } = lib.config;
+
+  program
+    .command('my-plugin-config')
+    .description('Show or initialize plugin config')
+    .action(async () => {
+      const config = await loadConfig();
+
+      if (!config.myPluginSettings) {
+        config.myPluginSettings = { enabled: true };
+        await saveConfig(config);
+      }
+
+      console.log(JSON.stringify(config.myPluginSettings, null, 2));
+    });
+}
+```
 
 ## API Usage
 

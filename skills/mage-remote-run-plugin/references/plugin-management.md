@@ -32,4 +32,5 @@ mage-remote-run plugin list
 - Register custom CLI commands.
 - Listen to lifecycle events such as `beforeCommand` or `mcpStart`.
 - Use the active connection through `createClient()`.
+- Reuse built-in CLI helpers through `context.lib.utils`, `context.lib.commandHelper`, and `context.lib.config`.
 - Inject configuration, including virtual commands.
