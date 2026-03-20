@@ -1,6 +1,6 @@
 ---
 name: mage-remote-run
-description: Guidance for using the Mage Remote Run CLI to manage Adobe Commerce, Magento Open Source, and Mage-OS instances remotely. Use when a user needs to: inspect or manage a remote Adobe Commerce, Magento Open Source, or Mage-OS instance; get help with mage-remote-run commands, flags, filters, or workflow design; configure connections, authentication, MCP server mode, plugins, or the interactive console; suggest automation-friendly command examples for CI/CD, scripts, or agent integrations.
+description: "Guidance for using the Mage Remote Run CLI to manage Adobe Commerce, Magento Open Source, and Mage-OS instances remotely. Use when a user needs to: inspect or manage a remote Adobe Commerce, Magento Open Source, or Mage-OS instance; get help with mage-remote-run commands, flags, filters, or workflow design; configure connections, authentication, MCP server mode, plugins, or the interactive console; suggest automation-friendly command examples for CI/CD, scripts, or agent integrations."
 ---
 
 # Mage Remote Run
