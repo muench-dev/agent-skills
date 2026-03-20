@@ -1,5 +1,28 @@
 # Plugin Management
 
+## Create a Plugin Package
+
+Start with a Node.js package:
+
+```bash
+mkdir my-plugin
+cd my-plugin
+npm init -y
+```
+
+Set `"type": "module"` in `package.json` and declare `mage-remote-run` as a peer dependency, then create `index.js`:
+
+```json
+{
+  "name": "mage-remote-run-plugin-my-plugin",
+  "version": "1.0.0",
+  "type": "module",
+  "peerDependencies": {
+    "mage-remote-run": "^1.5.0"
+  }
+}
+```
+
 ## Commands
 
 Register an installed npm package or local path:
