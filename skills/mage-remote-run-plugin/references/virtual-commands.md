@@ -75,25 +75,31 @@ Create a parent command group without an endpoint by supplying metadata only:
 
 ## Supported Properties
 
-- `name`: required CLI command path
-- `method`: required for executable commands
-- `endpoint`: required for executable commands
-- `description`: optional help text
-- `summary`: optional short listing text
-- `options`: option definitions
-- `option` / `parameter` / `parameters`: backward-compatible aliases for `options`
-- `filters` / `filter`: predefined search filters
-- `connection_types`: allowed profile types
+| Property | Type | Notes |
+|---|---|---|
+| `name` | string | **Required.** Spaces create nested commands. |
+| `method` | string | Required for executable commands (`GET`, `POST`, `PUT`, `DELETE`). |
+| `endpoint` | string | Required for executable commands. Supports `:placeholders`. |
+| `description` | string | Help text. |
+| `summary` | string | Short listing text; falls back to `description`. |
+| `options` | object | Map of CLI option definitions. |
+| `option` / `parameter` / `parameters` | object | Backward-compatible aliases for `options`. |
+| `filters` / `filter` | string or array | Predefined search filters (same syntax as `--filter` flags). |
+| `connection_types` | array | Restricts which profile types may use this command. |
+| `body` | object | JSON body template for POST/PUT/PATCH (top-level, not inside `options`). |
 
 Each option supports:
 
-- `required`
-- `default`
-- `description`
-- `short`
-- `long`
-- `flags`
-- `type: "boolean"`
+| Property | Type | Description |
+|---|---|---|
+| `required` | boolean | Marks option as required. |
+| `default` | any | Fallback value when not provided. |
+| `description` | string | Help text for the option. |
+| `short` | string | Adds a short flag (e.g., `-s`). |
+| `long` | string | Overrides the generated long flag name. |
+| `flags` | string | Sets the full Commander flag string directly. |
+| `type` | string | Use `"boolean"` for a flag without a value placeholder. |
+| `choices` | array | Restricts to predefined values; triggers an interactive prompt when omitted. |
 
 ## Mapping Rules
 
@@ -138,5 +144,83 @@ Predefined filters support placeholders such as `${firstLetter}` or `{:firstLett
 Only simple placeholder substitution is supported; JavaScript expressions are not evaluated.
 
 Users can still add extra `--filter` flags at runtime.
+
+## JSON Request Body Templates
+
+For POST/PUT/PATCH, define a `body` object at the top level with `${paramName}` or `{:paramName}` placeholders:
+
+```json
+{
+  "name": "customer create",
+  "method": "POST",
+  "endpoint": "/:store/V1/customers",
+  "body": {
+    "customer": {
+      "email": "${email}",
+      "firstname": "${firstname}",
+      "lastname": "${lastname}",
+      "websiteId": "${websiteId}"
+    },
+    "password": "${password}"
+  },
+  "options": {
+    "store":     { "type": "string", "default": "all" },
+    "email":     { "type": "string", "required": true },
+    "firstname": { "type": "string", "required": true },
+    "lastname":  { "type": "string", "required": true },
+    "websiteId": { "type": "string", "default": "1" },
+    "password":  { "type": "string", "required": true }
+  }
+}
+```
+
+When `body` is defined, only path parameters (`:store`) are substituted in the URL. Options not referenced in the template are ignored for the body.
+
+### Type Preservation
+
+A placeholder covering the entire string value (e.g., `"${websiteId}"`) preserves the original type — a number stays a number. Mixed-content strings like `"Order ${orderId} created"` always produce a string. Static JSON values (numbers, booleans, `null`) pass through unchanged.
+
+## Option Choices
+
+Adding `choices` to an option restricts it to predefined values:
+- Providing the flag via CLI → Commander validates the value against the list.
+- Omitting the flag → an interactive selection prompt appears automatically.
+
+### Simple String Choices
+
+```json
+"status": {
+  "type": "string",
+  "required": true,
+  "choices": ["enabled", "disabled"]
+}
+```
+
+### Object Choices (Label + Value)
+
+```json
+"choices": [
+  { "name": "Not Visible Individually", "value": "1" },
+  { "name": "Catalog",                  "value": "2" },
+  { "name": "Search",                   "value": "3" },
+  { "name": "Catalog, Search",          "value": "4" }
+]
+```
+
+The `name` displays in the prompt; `value` is sent in the API request.
+
+## Non-Interactive Mode
+
+Interactive prompts are suppressed automatically when any of these conditions is met:
+
+| Condition | Details |
+|---|---|
+| `CI=<any>` | Set by GitHub Actions, GitLab CI, CircleCI, and most CI systems. |
+| `NO_INTERACTIVE=1` | Explicit opt-out. |
+| `NON_INTERACTIVE=1` | Alias for `NO_INTERACTIVE=1`. |
+| `NONINTERACTIVE=1` | Alias for `NO_INTERACTIVE=1`. |
+| stdin is not a TTY | Stdin is piped or redirected. |
+
+In non-interactive mode, missing required options cause an error exit; missing optional options without a default are silently skipped.
 
 If the surrounding plugin needs to inspect or normalize command tokens before dispatch, use `context.lib.commandHelper` alongside these virtual command definitions.
