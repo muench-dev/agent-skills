@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:mage-remote-run.muench.dev)",
+      "Bash(rtk git *)"
+    ]
+  }
+}
